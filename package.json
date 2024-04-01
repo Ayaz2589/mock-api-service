@@ -1,5 +1,5 @@
 {
-  "name": "your-project-name",
+  "name": "mock-api-service",
   "version": "1.0.0",
   "description": "",
   "main": "dist/app.js",
