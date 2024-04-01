@@ -1,5 +1,5 @@
 # Specify the base image
-FROM node:14
+FROM node:16
 
 # Create app directory in the container
 WORKDIR /usr/src/app
@@ -15,6 +15,9 @@ RUN npm install
 
 # Bundle app source inside the Docker image
 COPY . .
+
+# Generate the Prisma Client
+RUN npx prisma generate
 
 # Your app binds to port 8080 so you'll use the EXPOSE instruction to have it mapped by the docker daemon
 EXPOSE 8080
