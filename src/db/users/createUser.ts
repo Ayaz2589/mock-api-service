@@ -2,6 +2,7 @@ import { pool } from "../../utils/setupDatabase";
 import { AuthErrorHandler } from "../../error";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 
 type Props = {
   email: string,
@@ -15,13 +16,19 @@ const createUser = async ({ email, password }: Props) => {
     const userExistsResult = await pool.query(userExistsQuery, userExistsValues);
 
     if (userExistsResult.rows.length > 0) {
-      throw AuthErrorHandler.unauthorizedUserAlreadyExists()
+      throw AuthErrorHandler.unauthorizedUserAlreadyExists();
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const createUserQuery = `INSERT INTO Auth (email, password) VALUES ($1, $2) RETURNING *`;
-    const createUserValues = [email, hashedPassword];
+    const userId = uuidv4();
+
+    const createUserQuery = `
+      INSERT INTO Auth (id, email, password, created_at, updated_at)
+      VALUES ($1, $2, $3, NOW(), NOW())
+      RETURNING *
+    `;
+    const createUserValues = [userId, email, hashedPassword];
     const newUserResult = await pool.query(createUserQuery, createUserValues);
     const newUser = newUserResult.rows[0];
 
@@ -33,9 +40,9 @@ const createUser = async ({ email, password }: Props) => {
     const saveRefreshTokenValues = [refreshToken, newUser.id];
     await pool.query(saveRefreshTokenQuery, saveRefreshTokenValues);
 
-    return { accessToken, refreshToken }
+    return { accessToken, refreshToken };
   } catch (error) {
-    throw error
+    throw error;
   }
 }
 

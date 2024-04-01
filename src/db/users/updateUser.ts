@@ -3,9 +3,9 @@ import { AuthErrorHandler } from "../../error";
 import bcrypt from 'bcryptjs';
 
 type Props = {
-  id: string,
-  email: string,
-  password: string,
+  id: string;
+  email: string;
+  password: string;
 }
 
 const updateUser = async ({ id, email, password }: Props) => {
@@ -20,7 +20,7 @@ const updateUser = async ({ id, email, password }: Props) => {
 
     let hashedPassword: string | null = null;
     if (password) {
-      hashedPassword = await bcrypt.hash(password, 10) as string;
+      hashedPassword = await bcrypt.hash(password, 10);
     }
 
     let updateQuery = `UPDATE Auth SET email = $1`;
@@ -31,10 +31,8 @@ const updateUser = async ({ id, email, password }: Props) => {
       updateValues.push(hashedPassword!);
     }
 
-    updateQuery += ` WHERE id = $${updateValues.length + 1}`;
     updateValues.push(id);
-
-    await pool.query(updateQuery, updateValues);
+    await pool.query(updateQuery + ` WHERE id = $${updateValues.length}`, updateValues);
 
     return { message: 'User updated successfully' };
   } catch (error) {

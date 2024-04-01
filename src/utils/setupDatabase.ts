@@ -30,10 +30,12 @@ const checkDatabaseConnection = async (triesLeft = 5) => {
 const createUserTable = async () => {
   const query = `
     CREATE TABLE IF NOT EXISTS Auth (
-      id SERIAL PRIMARY KEY,
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       email VARCHAR(255) UNIQUE NOT NULL,
       password VARCHAR(255) NOT NULL,
-      refresh_token VARCHAR(255)
+      refresh_token VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`;
 
   try {
