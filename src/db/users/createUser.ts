@@ -25,7 +25,7 @@ const createUser = async ({ email, password }: Props) => {
     const newUserResult = await pool.query(createUserQuery, createUserValues);
     const newUser = newUserResult.rows[0];
 
-    const accessToken = jwt.sign({ userId: newUser.id }, process.env.ACCESS_TOKEN_SECRET || "", { expiresIn: '15m' });
+    const accessToken = jwt.sign({ userId: newUser.id }, process.env.ACCESS_TOKEN_SECRET || "", { expiresIn: '1hr' });
 
     const refreshToken = jwt.sign({ userId: newUser.id }, process.env.REFRESH_TOKEN_SECRET || "");
 
