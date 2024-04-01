@@ -1,43 +1,33 @@
-// app.ts
-import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import retry from 'retry';
+import express, { Request, Response, NextFunction } from 'express';
+import setupDatabase, { pool } from "./utils/setupDatabase";
+import authRoutes from './routes/auth';
+import { errorHandler } from './middleware';
+
+process.on("SIGINT", async () => {
+  await pool.end();
+  process.exit();
+});
+
+setupDatabase().catch(console.error);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const prisma = new PrismaClient();
+const PORT = process.env.PORT || 8080;
 
-async function startServer() {
-  const operation = retry.operation({
-    retries: 3, // Number of retry attempts
-    factor: 2, // Factor by which to increase the delay between retries (exponential backoff)
-    minTimeout: 1000, // Minimum delay between retries (in milliseconds)
-    maxTimeout: 5000, // Maximum delay between retries (in milliseconds)
-  });
+// Middleware
+app.use(express.json()); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
-  operation.attempt(async (currentAttempt: number) => {
-    console.log(`Attempting to connect to database (attempt ${currentAttempt})`);
-    try {
-      await prisma.$connect();
-      console.log('Database connection successful.');
+app.listen(PORT, () => {
+  console.log(`Example app listening at http://localhost:${PORT}`);
+});
 
-      app.get('/', (req, res) => {
-        res.send('Welcome to the Mock API Service by Ayaz Uddin');
-      });
+// Routes
+app.use('/api/auth', authRoutes);
 
-      app.listen(PORT, () => {
-        console.log(`Server is running at http://localhost:${PORT}`);
-      });
-    } catch (error) {
-      if (operation.retry(error as Error)) {
-        console.log(`Retrying after error: ${(error as Error).message}`);
-        return;
-      }
-      console.error('Failed to connect to the database after multiple attempts:', error);
-      process.exit(1);
-    }
-  });
-}
+// Default route
+app.get('/', (req, res) => {
+  res.send('Welcome to the Mock API Service by Ayaz Uddin');
+});
 
-
-startServer();
+// Error handling middleware
+app.use(errorHandler);

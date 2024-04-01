@@ -16,9 +16,6 @@ RUN npm install
 # Bundle app source inside the Docker image
 COPY . .
 
-# Generate the Prisma Client
-RUN npx prisma generate
-
 # Your app binds to port 8080 so you'll use the EXPOSE instruction to have it mapped by the docker daemon
 EXPOSE 8080
 
